@@ -10,7 +10,7 @@ from collections import defaultdict, deque
 from email.message import EmailMessage
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-
+from flask_cors import CORS
 BASE = os.path.dirname(os.path.abspath(__file__))
 PUBLIC = os.path.abspath(os.path.join(BASE, "..", "public"))
 load_dotenv(os.path.join(BASE, ".env"))
@@ -23,7 +23,7 @@ SMTP_PASS = os.getenv("SMTP_PASS", "")
 MAIL_FROM = os.getenv("MAIL_FROM", SMTP_USER or OWNER)
 
 app = Flask(__name__, static_folder=PUBLIC, static_url_path="")
-HITS = defaultdict(deque)
+HITS = defaultdict(deque) CORS(app)
 
 def ip():
     return (request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0]).strip()
