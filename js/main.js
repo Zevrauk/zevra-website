@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded',function(){
   f.addEventListener('submit',function(ev){
     ev.preventDefault();
     btn.disabled=true;msg.textContent='Sending...';
-    fetch((window.ZEVRA_API||'')+'/api/contact',{
+    fetch('https://zevra-api.onrender.com/api/contact',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         name:f.elements.name.value,email:f.elements.email.value,
