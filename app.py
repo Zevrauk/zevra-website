@@ -5,23 +5,19 @@ Zevrauk website server.
 Run locally:  python3 app.py
 Live server:  gunicorn -w 1 --threads 8 -b 0.0.0.0:$PORT app:app
 """
-import os, time, smtplib
+import os, time
 from collections import defaultdict, deque
-from email.message import EmailMessage
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+import resend
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 PUBLIC = os.path.abspath(os.path.join(BASE, "..", "public"))
 load_dotenv(os.path.join(BASE, ".env"))
 
 OWNER = os.getenv("OWNER_EMAIL", "info@zevrauk.com")
-SMTP_HOST = os.getenv("SMTP_HOST", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASS = os.getenv("SMTP_PASS", "")
-MAIL_FROM = os.getenv("MAIL_FROM", SMTP_USER or OWNER)
+resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 app = Flask(__name__, static_folder=PUBLIC, static_url_path="")
 HITS = defaultdict(deque)
@@ -44,24 +40,20 @@ def one_line(s, n=100):
     return " ".join(str(s).split())[:n]
 
 def send_mail(subject, body, reply_to=None):
-    if not SMTP_HOST:
-        app.logger.error("SMTP not configured; email not sent: %s", subject)
+    if not resend.api_key:
+        app.logger.error("RESEND_API_KEY not configured; email not sent: %s", subject)
         return False
-    msg = EmailMessage()
-    msg["Subject"], msg["From"], msg["To"] = one_line(subject, 150), MAIL_FROM, OWNER
-    if reply_to:
-        msg["Reply-To"] = reply_to
-    msg.set_content(body)
     try:
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as s:
-                s.login(SMTP_USER, SMTP_PASS)
-                s.send_message(msg)
-        else:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as s:
-                s.starttls()
-                s.login(SMTP_USER, SMTP_PASS)
-                s.send_message(msg)
+        params = {
+            "from": "Zevra Website <onboarding@resend.dev>",
+            "to": [OWNER],
+            "subject": subject,
+            "text": body,
+        }
+        if reply_to:
+            params["reply_to"] = reply_to
+        
+        resend.Emails.send(params)
         return True
     except Exception:
         app.logger.exception("Email failed")
