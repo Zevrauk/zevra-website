@@ -23,8 +23,8 @@ SMTP_PASS = os.getenv("SMTP_PASS", "")
 MAIL_FROM = os.getenv("MAIL_FROM", SMTP_USER or OWNER)
 
 app = Flask(__name__, static_folder=PUBLIC, static_url_path="")
-HITS = defaultdict(deque) CORS(app)
-
+HITS = defaultdict(deque)
+CORS(app)
 def ip():
     return (request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0]).strip()
 
