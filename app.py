@@ -15,9 +15,8 @@ import resend
 BASE = os.path.dirname(os.path.abspath(__file__))
 PUBLIC = os.path.abspath(os.path.join(BASE, "..", "public"))
 load_dotenv(os.path.join(BASE, ".env"))
-
-# সাময়িকভাবে টেস্ট করার জন্য এখানে আপনার জিমেইল বসিয়ে দেওয়া হলো
-OWNER = os.getenv("OWNER_EMAIL", "zevrauk@gmail.com")
+#Official mail address
+OWNER = os.getenv("OWNER_EMAIL", "info@zevrauk.com")
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 app = Flask(__name__, static_folder=PUBLIC, static_url_path="")
@@ -46,7 +45,7 @@ def send_mail(subject, body, reply_to=None):
         return False
     try:
         params = {
-            "from": "Zevra Website <onboarding@resend.dev>",
+            "from": "Zevrauk <info@zevrauk.com>",
             "to": [OWNER],
             "subject": subject,
             "text": body,
