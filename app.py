@@ -16,7 +16,8 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 PUBLIC = os.path.abspath(os.path.join(BASE, "..", "public"))
 load_dotenv(os.path.join(BASE, ".env"))
 
-OWNER = os.getenv("OWNER_EMAIL", "info@zevrauk.com")
+# সাময়িকভাবে টেস্ট করার জন্য এখানে আপনার জিমেইল বসিয়ে দেওয়া হলো
+OWNER = os.getenv("OWNER_EMAIL", "zevrauk@gmail.com")
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 
 app = Flask(__name__, static_folder=PUBLIC, static_url_path="")
