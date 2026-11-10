@@ -11,13 +11,14 @@ from email.message import EmailMessage
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 PUBLIC = os.path.abspath(os.path.join(BASE, "..", "public"))
 load_dotenv(os.path.join(BASE, ".env"))
 
 OWNER = os.getenv("OWNER_EMAIL", "info@zevrauk.com")
 SMTP_HOST = os.getenv("SMTP_HOST", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASS = os.getenv("SMTP_PASS", "")
 MAIL_FROM = os.getenv("MAIL_FROM", SMTP_USER or OWNER)
@@ -25,6 +26,7 @@ MAIL_FROM = os.getenv("MAIL_FROM", SMTP_USER or OWNER)
 app = Flask(__name__, static_folder=PUBLIC, static_url_path="")
 HITS = defaultdict(deque)
 CORS(app)
+
 def ip():
     return (request.headers.get("X-Forwarded-For", request.remote_addr or "?").split(",")[0]).strip()
 
@@ -53,10 +55,13 @@ def send_mail(subject, body, reply_to=None):
     try:
         if SMTP_PORT == 465:
             with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as s:
-                s.login(SMTP_USER, SMTP_PASS); s.send_message(msg)
+                s.login(SMTP_USER, SMTP_PASS)
+                s.send_message(msg)
         else:
             with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as s:
-                s.starttls(); s.login(SMTP_USER, SMTP_PASS); s.send_message(msg)
+                s.starttls()
+                s.login(SMTP_USER, SMTP_PASS)
+                s.send_message(msg)
         return True
     except Exception:
         app.logger.exception("Email failed")
@@ -69,7 +74,7 @@ def home():
 @app.post("/api/contact")
 def contact():
     d = request.get_json(silent=True, force=True) or {}
-    if d.get("website"):                      # honeypot: bots fill this
+    if d.get("website"):                        # honeypot: bots fill this
         return jsonify(ok=True)
     if limited("contact", 5, 3600):
         return jsonify(error="Too many requests. Please try again later."), 429
